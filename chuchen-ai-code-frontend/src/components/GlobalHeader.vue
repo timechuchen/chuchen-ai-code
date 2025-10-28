@@ -15,51 +15,124 @@
         <a-menu
           v-model:selectedKeys="selectedKeys"
           mode="horizontal"
-          :items="menuItems"
+          :items="menus"
           @click="handleMenuClick"
         />
       </a-col>
       <!-- 右侧：用户操作区域 -->
-      <a-col>
-        <div class="user-login-status">
-          <a-button type="primary">登录</a-button>
-        </div>
-      </a-col>
+      <div v-if="loginUserStore.loginUser.id" class="user-info">
+        <a-dropdown>
+          <a-space>
+            <a-avatar :src="loginUserStore.loginUser.userAvatar" />
+            {{ loginUserStore.loginUser.userName ?? '无名' }}
+          </a-space>
+          <template #overlay>
+            <a-menu>
+              <a-menu-item @click="doInformation" disabled>
+                <UserOutlined />
+                个人信息
+              </a-menu-item>
+              <a-menu-item @click="doLogout">
+                <LogoutOutlined />
+                退出登录
+              </a-menu-item>
+            </a-menu>
+          </template>
+        </a-dropdown>
+      </div>
     </a-row>
   </a-layout-header>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-import type { MenuProps } from 'ant-design-vue'
+import { computed, h, ref } from 'vue'
+import { type RouteRecordRaw, useRouter } from 'vue-router'
+import { type MenuProps, message } from 'ant-design-vue'
+// JS 中引入 Store
+import { useLoginUserStore } from '@/stores/loginUser.ts'
 
+const loginUserStore = useLoginUserStore()
 const router = useRouter()
 // 当前选中菜单
 const selectedKeys = ref<string[]>(['/'])
 // 监听路由变化，更新当前选中菜单
-router.afterEach((to, from, next) => {
+router.afterEach((to) => {
   selectedKeys.value = [to.path]
 })
 
+import { LogoutOutlined, HomeOutlined, UserOutlined } from '@ant-design/icons-vue'
+import { userLogout } from '@/api/userController.ts'
+import checkAccess from '@/access/checkAccess.ts'
+
+// 用户注销
+const doLogout = async () => {
+  const res = await userLogout()
+  if (res.data.code === 0) {
+    loginUserStore.setLoginUser({
+      userName: '未登录',
+    })
+    message.success('退出登录成功')
+    await router.push('/user/login')
+  } else {
+    message.error('退出登录失败，' + res.data.message)
+  }
+}
+
+const doInformation = async () => {
+  console.log(1)
+  await router.push('/user/information')
+}
+
 // 菜单配置项
-const menuItems = ref([
+const originMenus = [
   {
     key: '/',
-    label: '首页',
-    title: '首页',
+    icon: () => h(HomeOutlined),
+    label: '主页',
+    title: '主页',
   },
   {
-    key: '/about',
-    label: '关于',
-    title: '关于我们',
+    key: '/admin/userManage',
+    label: '用户管理',
+    title: '用户管理',
   },
-  // {
-  //   key: 'others',
-  //   label: h('a', { href: 'https://github.com/timechuchen/chuchen-ai-code', target: '_blank' }, '代码仓库'),
-  //   title: 'AI 零代码平台',
-  // },
-])
+]
+
+const menuToRouteItem = (menu: any): RouteRecordRaw => {
+  // 获取所有路由
+  const routes = router.getRoutes()
+  // 根据菜单的key查找对应的路由
+  const route = routes.find((route) => route.path === menu.key)
+  // 如果找到对应路由则返回，否则返回一个默认的空路由对象
+  return route || ({} as RouteRecordRaw)
+}
+
+// 过滤菜单项
+const filterMenus = (menus = [] as MenuProps['items']) => {
+  // 过滤条件是一个回调函数 (menu) => { ... }, 返回 true 表示保留该菜单项，返回 false 表示过滤掉该菜单项
+  return menus?.filter((menu) => {
+    // 通过menu的key值找到对应的路由字段
+    const item = menuToRouteItem(menu)
+
+    // 如果是菜单项中没有对应的路由，就说明该菜单是自定义的，予以保留，返回true
+    if (!item.path) {
+      return true
+    }
+
+    // 如果有hideInMenu标记为true，则隐藏
+    if (item.meta?.hideInMenu) {
+      return false
+    }
+
+    // 根据权限过滤菜单，有权限则返回true，会保留该菜单
+    return checkAccess(loginUserStore.loginUser, item.meta?.access as string)
+  })
+}
+
+// 展示在菜单的路由数组
+const menus = computed(() => {
+  return filterMenus(originMenus)
+})
 
 // 处理菜单点击
 const handleMenuClick: MenuProps['onClick'] = (e) => {
@@ -97,5 +170,9 @@ const handleMenuClick: MenuProps['onClick'] = (e) => {
 
 .ant-menu-horizontal {
   border-bottom: none !important;
+}
+
+.user-info:hover {
+  cursor: pointer;
 }
 </style>
