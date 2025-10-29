@@ -20,25 +20,30 @@
         />
       </a-col>
       <!-- 右侧：用户操作区域 -->
-      <div v-if="loginUserStore.loginUser.id" class="user-info">
-        <a-dropdown>
-          <a-space>
-            <a-avatar :src="loginUserStore.loginUser.userAvatar" />
-            {{ loginUserStore.loginUser.userName ?? '无名' }}
-          </a-space>
-          <template #overlay>
-            <a-menu>
-              <a-menu-item @click="doInformation" disabled>
-                <UserOutlined />
-                个人信息
-              </a-menu-item>
-              <a-menu-item @click="doLogout">
-                <LogoutOutlined />
-                退出登录
-              </a-menu-item>
-            </a-menu>
-          </template>
-        </a-dropdown>
+      <div class="user-login-status">
+        <div v-if="loginUserStore.loginUser.id" class="user-info">
+          <a-dropdown>
+            <a-space>
+              <a-avatar :src="loginUserStore.loginUser.userAvatar" />
+              {{ loginUserStore.loginUser.userName ?? '无名' }}
+            </a-space>
+            <template #overlay>
+              <a-menu>
+                <a-menu-item @click="doInformation">
+                  <UserOutlined />
+                  个人信息
+                </a-menu-item>
+                <a-menu-item @click="doLogout">
+                  <LogoutOutlined />
+                  退出登录
+                </a-menu-item>
+              </a-menu>
+            </template>
+          </a-dropdown>
+        </div>
+        <div v-else>
+          <a-button type="primary" href="/user/login">登录</a-button>
+        </div>
       </div>
     </a-row>
   </a-layout-header>
@@ -79,7 +84,6 @@ const doLogout = async () => {
 }
 
 const doInformation = async () => {
-  console.log(1)
   await router.push('/user/information')
 }
 
@@ -97,7 +101,7 @@ const originMenus = [
     title: '用户管理',
   },
 ]
-
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const menuToRouteItem = (menu: any): RouteRecordRaw => {
   // 获取所有路由
   const routes = router.getRoutes()
