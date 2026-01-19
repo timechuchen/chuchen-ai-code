@@ -36,7 +36,7 @@ declare namespace API {
   }
 
   type DeleteRequest = {
-    id?: number | string
+    id?: number
   }
 
   type getInfoParams = {
@@ -68,19 +68,19 @@ declare namespace API {
 
   type PageUser = {
     records?: User[]
-    pageNumber?: number | string
-    pageSize?: number | string
-    totalPage?: number | string
-    totalRow?: number | string
+    pageNumber?: number
+    pageSize?: number
+    totalPage?: number
+    totalRow?: number
     optimizeCountQuery?: boolean
   }
 
   type PageUserVO = {
     records?: UserVO[]
-    pageNumber?: number | string
-    pageSize?: number | string
-    totalPage?: number | string
-    totalRow?: number | string
+    pageNumber?: number
+    pageSize?: number
+    totalPage?: number
+    totalRow?: number
     optimizeCountQuery?: boolean
   }
 
@@ -116,8 +116,8 @@ declare namespace API {
   }
 
   type UserQueryRequest = {
-    pageNum?: number | string
-    pageSize?: number | string
+    pageNum?: number
+    pageSize?: number
     sortField?: string
     sortOrder?: string
     id?: number
@@ -129,6 +129,7 @@ declare namespace API {
 
   type UserRegisterRequest = {
     userAccount?: string
+    role?: string
     userPassword?: string
     checkPassword?: string
   }

@@ -25,6 +25,15 @@
       >
         <a-input-password v-model:value="formState.checkPassword" placeholder="请确认密码" />
       </a-form-item>
+      <a-form-item
+        name="role"
+        label="角色"
+      >
+        <a-select v-model:value="formState.role">
+          <a-select-option value="doctor">Doctor</a-select-option>
+          <a-select-option value="user" disabled>Patient</a-select-option>
+        </a-select>
+      </a-form-item>
       <div class="tips">
         已有账号？
         <RouterLink to="/user/login">去登录</RouterLink>
@@ -48,6 +57,7 @@ const formState = reactive<API.UserRegisterRequest>({
   userAccount: '',
   userPassword: '',
   checkPassword: '',
+  role: 'doctor'
 })
 
 /**
@@ -73,7 +83,7 @@ const handleSubmit = async (values: API.UserRegisterRequest) => {
   // 注册成功，跳转到登录页面
   if (res.data.code === 0) {
     message.success('注册成功')
-    router.push({
+    await router.push({
       path: '/user/login',
       replace: true,
     })

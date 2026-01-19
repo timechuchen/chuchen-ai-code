@@ -1,57 +1,58 @@
 <template>
   <a-layout-header class="header">
-    <a-row :wrap="false">
-      <!-- 左侧：Logo和标题 -->
-      <a-col flex="200px">
+    <a-row :wrap="false" align="middle" style="height: 100%">
+      <!-- 左侧 Logo + 标题 固定宽度 -->
+      <a-col :flex="'0 0 260px'">
         <RouterLink to="/">
           <div class="header-left">
             <img class="logo" src="@/assets/logo.png" alt="Logo" />
-            <h1 class="site-title">AI 应用生成</h1>
+            <h1 class="site-title">大骨节病AI预测系统</h1>
           </div>
         </RouterLink>
       </a-col>
-      <!-- 中间：导航菜单 -->
-      <a-col flex="auto">
-        <a-menu
-          v-model:selectedKeys="selectedKeys"
-          mode="horizontal"
-          :items="menus"
-          @click="handleMenuClick"
-        />
+
+      <!-- 中间菜单 - 真正占满剩余空间并居中 -->
+      <a-col :flex="1" style="display: flex; justify-content: center">
+        <div style="display: flex; justify-content: center; width: 100%" :key="forceRenderKey">
+          <a-menu
+            v-model:selectedKeys="selectedKeys"
+            mode="horizontal"
+            :items="menus"
+            @click="handleMenuClick"
+          />
+        </div>
       </a-col>
-      <!-- 右侧：用户操作区域 -->
-      <div class="user-login-status">
-        <div v-if="loginUserStore.loginUser.id" class="user-info">
-          <a-dropdown>
-            <a-space>
-              <a-avatar :src="loginUserStore.loginUser.userAvatar" />
-              {{ loginUserStore.loginUser.userName ?? '无名' }}
-            </a-space>
-            <template #overlay>
-              <a-menu>
-                <a-menu-item @click="doInformation">
-                  <UserOutlined />
-                  个人信息
-                </a-menu-item>
-                <a-menu-item @click="doLogout">
-                  <LogoutOutlined />
-                  退出登录
-                </a-menu-item>
-              </a-menu>
-            </template>
-          </a-dropdown>
+
+      <!-- 右侧 用户区域 固定宽度或自适应 -->
+      <a-col :flex="'0 0 260px'">
+        <div class="user-login-status">
+          <!-- ... 原有用户登录/头像部分保持不变 ... -->
+          <div v-if="loginUserStore.loginUser.id" class="user-info">
+            <a-dropdown>
+              <a-space>
+                <a-avatar :src="loginUserStore.loginUser.userAvatar" />
+                {{ loginUserStore.loginUser.userName ?? '无名' }}
+              </a-space>
+              <template #overlay>
+                <a-menu>
+                  <a-menu-item @click="doInformation"> <UserOutlined /> 个人信息 </a-menu-item>
+                  <a-menu-item @click="doLogout"> <LogoutOutlined /> 退出登录 </a-menu-item>
+                </a-menu>
+              </template>
+            </a-dropdown>
+          </div>
+          <div v-else>
+            <a-button type="primary" href="/user/login">登录</a-button>
+          </div>
         </div>
-        <div v-else>
-          <a-button type="primary" href="/user/login">登录</a-button>
-        </div>
-      </div>
+      </a-col>
     </a-row>
   </a-layout-header>
 </template>
 
 <script setup lang="ts">
 import { computed, h, ref } from 'vue'
-import { type RouteRecordRaw, useRouter } from 'vue-router'
+import { type RouteRecordRaw, useRoute, useRouter } from 'vue-router'
 import { type MenuProps, message } from 'ant-design-vue'
 // JS 中引入 Store
 import { useLoginUserStore } from '@/stores/loginUser.ts'
@@ -86,6 +87,9 @@ const doLogout = async () => {
 const doInformation = async () => {
   await router.push('/user/information')
 }
+
+const route = useRoute()
+const forceRenderKey = computed(() => route.path + Date.now().toString().slice(-6))
 
 // 菜单配置项
 const originMenus = [
@@ -153,6 +157,8 @@ const handleMenuClick: MenuProps['onClick'] = (e) => {
 .header {
   background: #fff;
   padding: 0 24px;
+  height: 64px; /* 建议显式指定 header 高度 */
+  line-height: 64px;
 }
 
 .header-left {
@@ -162,21 +168,33 @@ const handleMenuClick: MenuProps['onClick'] = (e) => {
 }
 
 .logo {
-  height: 48px;
-  width: 48px;
+  height: 60px; /* 建议稍微调小一点更协调 */
+  width: 60px;
 }
 
 .site-title {
   margin: 0;
-  font-size: 18px;
+  font-size: 20px;
   color: #1890ff;
 }
 
-.ant-menu-horizontal {
-  border-bottom: none !important;
+.menu-wrapper {
+  width: 80%;
+  margin: auto;
+}
+
+.user-login-status {
+  display: flex;
+  align-items: center;
+  height: 100%;
 }
 
 .user-info:hover {
   cursor: pointer;
+}
+
+.ant-menu-horizontal {
+  border-bottom: none !important;
+  background: transparent;
 }
 </style>

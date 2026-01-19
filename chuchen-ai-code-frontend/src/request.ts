@@ -31,7 +31,7 @@ myAxios.interceptors.response.use(
         !response.request.responseURL.includes('user/get/login') &&
         !window.location.pathname.includes('/user/login')
       ) {
-        message.warning('请先登录').then(r => {})
+        message.warning('请先登录').then(() => {})
         window.location.href = `/user/login?redirect=${window.location.href}`
       }
     }

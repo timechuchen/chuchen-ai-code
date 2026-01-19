@@ -5,6 +5,8 @@ server:
 spring:
   application:
     name: chuchen-ai-code-backend
+  profiles:
+    active: local
   # mysql
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
